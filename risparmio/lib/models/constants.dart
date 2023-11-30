@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 Color bgColor = const Color(0xFFF4F4F4);
 
+Color speseCol = Color.fromARGB(255, 239, 149, 149);
+Color entrateCol = Color.fromARGB(255, 149, 161, 239);
+
 const List<String> constTipoSpese = [
   'Utenze',
   'Spesa',

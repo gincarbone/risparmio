@@ -139,7 +139,7 @@ class _MainDrawerState extends State<MainDrawer> {
                   textColor: Colors.white,
                   leading: IconButton(
                     icon: Icon(
-                      Icons.delete,
+                      Icons.delete_outline_outlined,
                       color: Colors.white,
                     ),
                     onPressed: () {

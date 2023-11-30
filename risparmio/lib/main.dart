@@ -149,15 +149,15 @@ class _CalendarScreenState extends State<CalendarScreen>
                             fontSize: 15, fontWeight: FontWeight.bold),
                         weekendStyle: TextStyle(
                             fontSize: 12,
-                            color: Colors.red,
+                            color: Colors.redAccent,
                             fontWeight: FontWeight.bold)),
                     daysOfWeekHeight: 28,
-                    calendarStyle: const CalendarStyle(
+                    calendarStyle: CalendarStyle(
                       defaultTextStyle:
                           TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       weekendTextStyle: TextStyle(
                           fontSize: 42,
-                          color: Colors.red,
+                          color: Colors.redAccent,
                           fontWeight: FontWeight.bold),
                       todayDecoration: BoxDecoration(
                         color: Colors
@@ -197,7 +197,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                         } else if (isWeekend) {
                           dayStyle = const TextStyle(
                               fontSize: 18,
-                              color: Colors.red,
+                              color: Colors.redAccent,
                               fontWeight: FontWeight.bold);
                         } else {
                           dayStyle = const TextStyle(
@@ -238,7 +238,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                       },
                     ),
                   ))),
-          SizedBox(
+          const SizedBox(
             height: 2,
           ),
           //SizedBox(height: 240),
@@ -251,7 +251,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                     //width: 200.0, // Imposta una larghezza per il Container
                     height: 200.0, // Imposta un'altezza per il Container
                     margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                    padding: EdgeInsets.all(
+                    padding: const EdgeInsets.all(
                         10), // Aggiungi del padding se necessario
                     decoration: BoxDecoration(
                       color: Colors
@@ -281,14 +281,14 @@ class _CalendarScreenState extends State<CalendarScreen>
                   ),
                 ),
               ]),
-          SizedBox(
+          const SizedBox(
             height: 5,
           ),
           Padding(
               padding: const EdgeInsets.all(10.0),
               child: Container(
                 height: 300.0,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(
                         20.0), // Angolo arrotondato in alto a sinistra
@@ -309,7 +309,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Row(
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -323,7 +323,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                           ),
                         ],
                       ),
-                      Row(
+                      const Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
@@ -337,7 +337,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                           ),
                         ],
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       Text(
@@ -353,7 +353,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -361,24 +361,24 @@ class _CalendarScreenState extends State<CalendarScreen>
                           Expanded(
                             child: buildColumnItem(
                                 Icons.money,
-                                "Totale spese registrate nel mese",
-                                '€ ${totalExpensesOfMonth.toStringAsFixed(2)}'),
-                          ),
-                          Expanded(
-                            child: buildColumnItem(
-                                Icons.calendar_month,
-                                "Totale spese previste a fine mese *",
+                                "Previsione spesa a fine mese*",
                                 '€ ${forecastExpensesOfMonth.toStringAsFixed(2)}'),
                           ),
                           Expanded(
                             child: buildColumnItem(
+                                Icons.graphic_eq,
+                                "Quanto spendi in media al giorno?",
+                                '€ ${(totalExpensesOfMonth / DateTime.now().day).toStringAsFixed(2)}'),
+                          ),
+                          Expanded(
+                            child: buildColumnItem(
                                 Icons.lightbulb,
-                                "Quanto puoi spendere ogni giorno?",
+                                "Quanto puoi spendere al giorno?",
                                 '€ ${dailyBudget.toStringAsFixed(2)}'),
                           ),
                         ],
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                     ],
@@ -387,7 +387,7 @@ class _CalendarScreenState extends State<CalendarScreen>
               )),
           //SizedBox(height: 240),
 
-          SizedBox(
+          const SizedBox(
             height: 10,
           )
         ])));
@@ -433,7 +433,7 @@ class _CalendarScreenState extends State<CalendarScreen>
               children: <Widget>[
                 DropdownButton<String>(
                   value: selectedCategory,
-                  hint: Text('Seleziona Categoria'),
+                  hint: const Text('Seleziona Categoria'),
                   items: (isExpense ? constUsciteFisse : constEntrateFisse)
                       .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
@@ -503,7 +503,7 @@ class _CalendarScreenState extends State<CalendarScreen>
         Container(
           width: 40,
           height: 40,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
           ),
@@ -518,15 +518,15 @@ class _CalendarScreenState extends State<CalendarScreen>
                         : Colors.black),
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           smallText,
-          style: TextStyle(color: Colors.white, fontSize: 9),
+          style: const TextStyle(color: Colors.white, fontSize: 9),
           textAlign: TextAlign.center,
         ),
         Text(
           largeText,
-          style: TextStyle(
+          style: const TextStyle(
               color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),

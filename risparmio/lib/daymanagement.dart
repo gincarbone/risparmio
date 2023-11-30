@@ -61,6 +61,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
         DateFormat('d MMMM', 'it_IT').format(widget.selectedDay);
 
     return Scaffold(
+      backgroundColor: bgColor,
       appBar: AppBar(
         title: Text('Spese del $formattedDate'),
         leading: IconButton(
@@ -85,8 +86,10 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
               itemBuilder: (context, index) {
                 final expense = expenses[index];
                 return ListTile(
+                  tileColor: Colors.white,
                   leading: IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
+                    icon:
+                        Icon(Icons.delete_outline_outlined, color: Colors.grey),
                     onPressed: () {
                       // Logica per eliminare la spesa
                       showConfirmationDialog(context, expense);
@@ -95,15 +98,15 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                   title: Text(
                     expense.description,
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
                     ),
                   ),
                   trailing: Text(
                     '€ -${expense.amount.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.redAccent,
+                      color: speseCol,
                     ),
                   ),
                   onTap: () => showExpenseDialog(existingExpense: expense),
@@ -118,7 +121,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
             },
             child: Icon(
               Icons.add,
-              color: Colors.blueAccent,
+              color: entrateCol,
               size: 40,
             ),
           ),

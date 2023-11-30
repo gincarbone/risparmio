@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:risparmio/main.dart';
+import 'package:risparmio/main.dart'; // Assicurati che questo import sia corretto
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -11,11 +11,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 4), () {
+    Timer(const Duration(seconds: 4), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-            builder: (_) =>
-                CalendarScreen()), // Sostituisci con il tuo widget della schermata principale
+          builder: (_) =>
+              const CalendarScreen(), // Sostituisci con il tuo widget della schermata principale
+        ),
       );
     });
   }
@@ -27,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -37,26 +38,39 @@ class _SplashScreenState extends State<SplashScreen> {
             ],
           ),
         ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                Icons
-                    .savings_outlined, // Sostituisci con l'icona che preferisci
-                size: 100.0,
+        child: const Column(
+          children: <Widget>[
+            Spacer(), // Utilizza Spacer per centrare verticalmente l'icona e il testo
+            Icon(
+              Icons.savings_outlined, // Sostituisci con l'icona che preferisci
+              size: 100.0,
+              color: Colors.white,
+            ),
+            Text(
+              "Risparmio",
+              style: TextStyle(
                 color: Colors.white,
+                fontSize: 12.0,
+                fontWeight: FontWeight.normal,
               ),
-              Text(
-                "Risparmio",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.0,
-                  fontWeight: FontWeight.normal,
+            ),
+            Spacer(), // Continua a utilizzare Spacer per mantenere centrato il contenuto
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text("You&Media",
+                        style: TextStyle(fontSize: 10, color: Colors.white)),
+                    Text("v. 1.0.1",
+                        style: TextStyle(fontSize: 10, color: Colors.white)),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
