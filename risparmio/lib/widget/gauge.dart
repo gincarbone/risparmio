@@ -45,7 +45,7 @@ class CustomCircularProgress extends CustomPainter {
 
     // Aggiungi il testo al centro
     final textSpan = TextSpan(
-      text: this.residuo,
+      text: residuo,
       style: TextStyle(
         color: Colors.black,
         fontSize: 28,
@@ -120,7 +120,7 @@ class CustomCircularProgress extends CustomPainter {
         descTextHeight,
         " -$usciteFisse",
         "Uscite Fisse",
-        Offset(size.width - 340, size.height - 80 - spaceBetween),
+        Offset(size.width - 330, size.height - 80 - spaceBetween),
         Colors.redAccent);
 
     // Seconda riga
@@ -133,7 +133,7 @@ class CustomCircularProgress extends CustomPainter {
         entrateFisse,
         "Entrate fisse",
         Offset(
-            size.width - 340, size.height / 2 + spaceBetween - 66 + textHeight),
+            size.width - 330, size.height / 2 + spaceBetween - 66 + textHeight),
         Colors.blueAccent);
 
     // Prima riga
@@ -145,7 +145,7 @@ class CustomCircularProgress extends CustomPainter {
         descTextHeight,
         " -$usciteMese",
         "Uscite del Mese",
-        Offset(size.width - 340, size.height - 40 - spaceBetween),
+        Offset(size.width - 330, size.height - 40 - spaceBetween),
         Colors.redAccent);
   }
 

@@ -262,11 +262,16 @@ class _CalendarScreenState extends State<CalendarScreen>
                     ),
                     child: CustomPaint(
                       painter: CustomCircularProgress(
-                          value: controller.value *
-                              (totalFixedIncomes -
-                                  totalFixedExpenses -
-                                  totalExpensesOfMonth) /
-                              totalFixedIncomes,
+                          value: totalFixedIncomes -
+                                      totalFixedExpenses -
+                                      totalExpensesOfMonth >
+                                  0
+                              ? controller.value *
+                                  (totalFixedIncomes -
+                                      totalFixedExpenses -
+                                      totalExpensesOfMonth) /
+                                  totalFixedIncomes
+                              : 0,
                           residuo:
                               "€ ${(totalFixedIncomes - totalFixedExpenses - totalExpensesOfMonth).toStringAsFixed(2)}",
                           entrateFisse: totalFixedIncomes.toStringAsFixed(2),

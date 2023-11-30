@@ -89,7 +89,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                     icon: Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
                       // Logica per eliminare la spesa
-                      deleteExpense(expense);
+                      showConfirmationDialog(context, expense);
                     },
                   ),
                   title: Text(
@@ -228,7 +228,65 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     expense.save(); // Assicurati che il modello Expense estenda HiveObject
     loadExpenses();
   }
-}
+
+  void showConfirmationDialog(BuildContext context, dynamic item) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title: Text('Conferma Cancellazione'),
+          content: Text('Sei sicuro di voler cancellare questo elemento?'),
+          actionsPadding:
+              EdgeInsets.zero, // Rimuove il padding intorno alle azioni
+          actions: <Widget>[
+            Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                      child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(20),
+                      ),
+                    ),
+                    child: TextButton(
+                      child: Text('ANNULLA',
+                          style: TextStyle(color: Colors.white)),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Chiude il dialogo
+                      },
+                    ),
+                  )),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(20),
+                        ),
+                      ),
+                      child: TextButton(
+                        child: Text('CONFERMA',
+                            style: TextStyle(color: Colors.white)),
+                        onPressed: () {
+                          deleteExpense(item);
+                          Navigator.of(context).pop(); // Chiude il dialogo
+                        },
+                      ),
+                    ),
+                  ),
+                ]),
+          ],
+        );
+      },
+    );
+  }
+} // end class
 
 bool isSameDay(DateTime date1, DateTime date2) {
   return date1.year == date2.year &&

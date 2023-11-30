@@ -74,7 +74,8 @@ class _MainDrawerState extends State<MainDrawer> {
                 Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Icon(
-                    Icons.savings, // Sostituisci con l'icona che preferisci
+                    Icons
+                        .savings_outlined, // Sostituisci con l'icona che preferisci
                     size: 50.0,
                     color: Colors.white,
                   ),
@@ -83,7 +84,7 @@ class _MainDrawerState extends State<MainDrawer> {
                   'Risparmio 1.0',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 9,
                   ),
                 ),
               ],
@@ -308,4 +309,4 @@ class _MainDrawerState extends State<MainDrawer> {
       },
     );
   }
-}
+} //end class

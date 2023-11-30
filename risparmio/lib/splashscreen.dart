@@ -11,7 +11,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 3), () {
+    Timer(Duration(seconds: 4), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
             builder: (_) =>
@@ -42,7 +42,8 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Icon(
-                Icons.savings, // Sostituisci con l'icona che preferisci
+                Icons
+                    .savings_outlined, // Sostituisci con l'icona che preferisci
                 size: 100.0,
                 color: Colors.white,
               ),
