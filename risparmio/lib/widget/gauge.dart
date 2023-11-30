@@ -21,7 +21,7 @@ class CustomCircularProgress extends CustomPainter {
     final center = Offset(size.width / 2 + 50, size.height / 2);
 
     // Aggiungi titolo
-    final textTitolo = TextSpan(
+    final textTitolo = const TextSpan(
       text: "Risparmio",
       style: TextStyle(
         color: Colors.black54,
@@ -46,7 +46,7 @@ class CustomCircularProgress extends CustomPainter {
     // Aggiungi il testo al centro
     final textSpan = TextSpan(
       text: residuo,
-      style: TextStyle(
+      style: const TextStyle(
         color: Colors.black,
         fontSize: 28,
         fontWeight: FontWeight.bold,

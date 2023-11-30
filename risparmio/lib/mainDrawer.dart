@@ -55,6 +55,7 @@ class _MainDrawerState extends State<MainDrawer> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      //shadowColor: Colors.grey,
       child: ListView(
         children: <Widget>[
           const DrawerHeader(
@@ -96,7 +97,7 @@ class _MainDrawerState extends State<MainDrawer> {
           // DrawerHeader e altre voci...
           buildExpansionTile('Entrate Fisse', fixedIncomes, false),
           buildExpansionTile('Uscite Fisse', fixedExpenses, true),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           // DrawerHeader e altre voci...
@@ -134,11 +135,11 @@ class _MainDrawerState extends State<MainDrawer> {
             .map((item) => ListTile(
                   title: Text(
                     '${item.category}: € ${item.amount.toStringAsFixed(2)}',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                   textColor: Colors.white,
                   leading: IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.delete_outline_outlined,
                       color: Colors.white,
                     ),
@@ -178,7 +179,7 @@ class _MainDrawerState extends State<MainDrawer> {
               children: <Widget>[
                 DropdownButton<String>(
                   value: selectedCategory,
-                  hint: Text('Seleziona Categoria'),
+                  hint: const Text('Seleziona Categoria'),
                   items: (isExpense ? constUsciteFisse : constEntrateFisse)
                       .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
@@ -194,7 +195,7 @@ class _MainDrawerState extends State<MainDrawer> {
                 ),
                 TextField(
                   controller: amountController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Importo',
                   ),
                   keyboardType: TextInputType.number,
@@ -214,6 +215,7 @@ class _MainDrawerState extends State<MainDrawer> {
                           double.parse(amountController.text))
                       : saveFixedIncome(selectedCategory!,
                           double.parse(amountController.text)));
+                  loadFixedData();
                   Navigator.of(context).pop();
                 }
               },
@@ -260,8 +262,9 @@ class _MainDrawerState extends State<MainDrawer> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
-          title: Text('Conferma Cancellazione'),
-          content: Text('Sei sicuro di voler cancellare questo elemento?'),
+          title: const Text('Conferma Cancellazione'),
+          content:
+              const Text('Sei sicuro di voler cancellare questo elemento?'),
           actionsPadding:
               EdgeInsets.zero, // Rimuove il padding intorno alle azioni
           actions: <Widget>[
@@ -271,14 +274,14 @@ class _MainDrawerState extends State<MainDrawer> {
                 children: [
                   Expanded(
                       child: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(20),
                       ),
                     ),
                     child: TextButton(
-                      child: Text('ANNULLA',
+                      child: const Text('ANNULLA',
                           style: TextStyle(color: Colors.white)),
                       onPressed: () {
                         Navigator.of(context).pop(); // Chiude il dialogo
@@ -287,14 +290,14 @@ class _MainDrawerState extends State<MainDrawer> {
                   )),
                   Expanded(
                     child: Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.blue,
                         borderRadius: BorderRadius.only(
                           bottomRight: Radius.circular(20),
                         ),
                       ),
                       child: TextButton(
-                        child: Text('CONFERMA',
+                        child: const Text('CONFERMA',
                             style: TextStyle(color: Colors.white)),
                         onPressed: () {
                           deleteItem(item, isExpense);
