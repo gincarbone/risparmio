@@ -8,9 +8,12 @@ class Expense extends HiveObject {
   late double amount;
 
   @HiveField(1)
-  late String description;
+  late String category;
 
   @HiveField(2)
+  late String description;
+
+  @HiveField(3)
   late DateTime date; // Data della spesa
 }
 

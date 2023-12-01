@@ -81,37 +81,45 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: expenses.length,
-              itemBuilder: (context, index) {
-                final expense = expenses[index];
-                return ListTile(
-                  tileColor: Colors.white,
-                  leading: IconButton(
-                    icon:
-                        Icon(Icons.delete_outline_outlined, color: Colors.grey),
-                    onPressed: () {
-                      // Logica per eliminare la spesa
-                      showConfirmationDialog(context, expense);
-                    },
-                  ),
-                  title: Text(
-                    expense.description,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
+            child: ListView(
+              children: ListTile.divideTiles(
+                context: context,
+                tiles: List.generate(expenses.length, (index) {
+                  final expense = expenses[index];
+                  return SafeArea(
+                    child: ListTile(
+                      tileColor: Colors.white,
+                      leading: IconButton(
+                        icon: Icon(Icons.delete_outline_outlined,
+                            color: Colors.grey),
+                        onPressed: () {
+                          // Logica per eliminare la spesa
+                          showConfirmationDialog(context, expense);
+                        },
+                      ),
+                      title: Text(
+                        expense.category,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87),
+                      ),
+                      trailing: Text(
+                        '€ -${expense.amount.toStringAsFixed(2)}',
+                        style: TextStyle(fontSize: 18, color: speseCol),
+                      ),
+                      subtitle: Text(
+                        expense.description,
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black),
+                      ),
+                      onTap: () => showExpenseDialog(existingExpense: expense),
                     ),
-                  ),
-                  trailing: Text(
-                    '€ -${expense.amount.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: speseCol,
-                    ),
-                  ),
-                  onTap: () => showExpenseDialog(existingExpense: expense),
-                );
-              },
+                  );
+                }),
+              ).toList(),
             ),
           ),
           ElevatedButton(
@@ -135,7 +143,12 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     //String? selectedCategory;
     //TextEditingController amountController = TextEditingController();
 
-    String? selectedCategory = existingExpense?.description;
+    String? selectedCategory = existingExpense?.category;
+    //String? selectedDescription = existingExpense?.description;
+
+    // Controller per le note
+    TextEditingController noteController =
+        TextEditingController(text: existingExpense?.description.toString());
     TextEditingController amountController =
         TextEditingController(text: existingExpense?.amount.toString());
 
@@ -144,34 +157,59 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Aggiungi Spesa'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                DropdownButton<String>(
-                  value: selectedCategory,
-                  hint: Text('Seleziona Categoria'),
-                  items: constTipoSpese
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
+          content: StatefulBuilder(
+            // Usa StatefulBuilder qui
+            builder: (BuildContext context, StateSetter setState) {
+              return SingleChildScrollView(
+                  child: ListBody(
+                children: <Widget>[
+                  DropdownButton<String>(
+                    value: selectedCategory,
+                    hint: Text('Seleziona Categoria'),
+                    items: constTipoSpese
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
                       selectedCategory = newValue;
-                    });
-                  },
-                ),
-                TextField(
-                  controller: amountController,
-                  decoration: const InputDecoration(
-                    labelText: 'Importo',
+                      setState(() {});
+                    },
                   ),
-                  keyboardType: TextInputType.number,
-                ),
-              ],
-            ),
+                  if (selectedCategory !=
+                      null) // Mostra la categoria selezionata
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text("Categoria: $selectedCategory"),
+                    ),
+                  TextField(
+                    controller: amountController,
+                    onChanged: (value) {
+                      amountController.text = value.replaceAll(',', '.');
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Importo',
+                    ),
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: speseCol),
+                  ),
+                  TextField(
+                    controller: noteController,
+                    decoration: const InputDecoration(
+                      labelText: 'Note',
+                    ),
+                    maxLength: 24, // Massimo 8 parole
+                    maxLines: 2, // Massimo 2 righe
+                  ),
+                ],
+              ));
+            },
           ),
           actions: <Widget>[
             ElevatedButton(
@@ -180,18 +218,17 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
               ),
               onPressed: () {
                 double? amount = double.tryParse(amountController.text);
+                String notes = noteController.text;
                 if (selectedCategory != null && amount != null) {
                   if (existingExpense != null) {
                     // Aggiorna l'esistente
-                    updateExpense(existingExpense, amount, selectedCategory!);
+                    updateExpense(
+                        existingExpense, amount, selectedCategory!, notes);
                   } else {
                     // Crea una nuova
-                    saveExpense(amount, selectedCategory!);
+                    saveExpense(amount, selectedCategory!, notes);
                   }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CalendarScreen()),
-                  );
+                  Navigator.of(context).pop(); // Chiudi il dialogo
                 }
               },
               child: const Text('Conferma',
@@ -214,19 +251,22 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     // Eventualmente, mostra un messaggio di conferma
   }
 
-  void saveExpense(double amount, String category) {
+  void saveExpense(double amount, String category, String description) {
     final newExpense = Expense()
       ..amount = amount
-      ..description = category
+      ..description = description
+      ..category = category
       ..date = widget.selectedDay;
 
     expenseBox.add(newExpense);
     loadExpenses();
   }
 
-  void updateExpense(Expense expense, double amount, String description) {
+  void updateExpense(
+      Expense expense, double amount, String category, String description) {
     expense
       ..amount = amount
+      ..category = category
       ..description = description;
     expense.save(); // Assicurati che il modello Expense estenda HiveObject
     loadExpenses();

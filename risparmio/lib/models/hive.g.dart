@@ -18,19 +18,22 @@ class ExpenseAdapter extends TypeAdapter<Expense> {
     };
     return Expense()
       ..amount = fields[0] as double
-      ..description = fields[1] as String
-      ..date = fields[2] as DateTime;
+      ..category = fields[1] as String
+      ..description = fields[2] as String
+      ..date = fields[3] as DateTime;
   }
 
   @override
   void write(BinaryWriter writer, Expense obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.amount)
       ..writeByte(1)
-      ..write(obj.description)
+      ..write(obj.category)
       ..writeByte(2)
+      ..write(obj.description)
+      ..writeByte(3)
       ..write(obj.date);
   }
 

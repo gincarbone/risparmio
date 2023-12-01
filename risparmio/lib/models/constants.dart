@@ -14,7 +14,8 @@ const List<String> constTipoSpese = [
   'Imprevisti',
   'Meccanico',
   'Multe',
-  'Cene',
+  'Pranzi e Cene',
+  'Abbonamenti',
   'Altro'
 ];
 
@@ -23,7 +24,7 @@ const List<String> constEntrateFisse = ['Stipendi', 'Affitti', 'Altro'];
 const List<String> constUsciteFisse = [
   'Mutui',
   'Finanziamento',
-  'Assegni Familiari',
+  'Assegni Alimenti',
   'Rate Diverse',
   'Altro'
 ];
