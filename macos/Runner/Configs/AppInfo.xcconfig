@@ -8,7 +8,7 @@
 PRODUCT_NAME = risparmio
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.risparmio
+PRODUCT_BUNDLE_IDENTIFIER = come.youandmedia.risparmio
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2023 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2023 com.youandmedia. All rights reserved.
