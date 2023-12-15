@@ -7,6 +7,7 @@ Color entrateCol = const Color.fromARGB(255, 149, 161, 239);
 
 const List<String> constTipoSpese = [
   'Utenze',
+  'Carburante',
   'Spesa',
   'Bambini',
   'Acquisti Online',
@@ -17,9 +18,13 @@ const List<String> constTipoSpese = [
   'Pranzi e Cene',
   'Abbonamenti',
   'Altro'
-];
+]; // gestire categorie su db hive
 
-const List<String> constEntrateFisse = ['Stipendi', 'Affitti', 'Altro'];
+const List<String> constEntrateFisse = [
+  'Stipendi',
+  'Affitti',
+  'Altro'
+]; // gestire categorie su db hive
 
 const List<String> constUsciteFisse = [
   'Mutui',
@@ -27,4 +32,4 @@ const List<String> constUsciteFisse = [
   'Assegni Alimenti',
   'Rate Diverse',
   'Altro'
-];
+];// gestire categorie su db hive

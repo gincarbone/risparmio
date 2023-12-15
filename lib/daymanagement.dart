@@ -18,6 +18,9 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
   late Box<Expense> expenseBox;
   List<Expense> expenses = [];
 
+  late Box<Income> incomeBox;
+  List<Income> incomes = [];
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +43,16 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     }
   }
 
+  void loadIncomes() {
+    if (incomeBox.isOpen) {
+      setState(() {
+        incomes = incomeBox.values
+            .where((income) => isSameDay(income.date, widget.selectedDay))
+            .toList();
+      });
+    }
+  }
+
   void addExpense(double amount, String description) {
     final newExpense = Expense()
       ..amount = amount
@@ -47,12 +60,24 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
       ..date = widget.selectedDay;
 
     expenseBox.add(newExpense);
-    loadExpenses();
+    loadIncomes();
+  }
+
+  void addIncome(double amount, String description) {
+    final newIncome = Income()
+      ..amount = amount
+      ..description = description
+      ..date = widget.selectedDay;
+
+    incomeBox.add(newIncome);
+    loadIncomes();
   }
 
   Future openHiveBox() async {
     expenseBox = await Hive.openBox<Expense>('expenses');
+    incomeBox = await Hive.openBox<Income>('incomes');
     loadExpenses();
+    loadIncomes();
   }
 
   @override
@@ -63,13 +88,14 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        title: Text('Spese del $formattedDate'),
+        title: Text('$formattedDate'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             // Qui inserisci il tuo comportamento personalizzato
             print('Azione personalizzata per il pulsante Indietro');
             loadExpenses();
+            loadIncomes();
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => CalendarScreen()),
@@ -94,7 +120,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                             color: Colors.grey),
                         onPressed: () {
                           // Logica per eliminare la spesa
-                          showConfirmationDialog(context, expense);
+                          showConfirmationDialog(context, expense, false);
                         },
                       ),
                       title: Text(
@@ -122,16 +148,94 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
               ).toList(),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              // Logica per aggiungere una nuova spesa
-              showExpenseDialog();
-            },
-            child: Icon(
-              Icons.add,
-              color: entrateCol,
-              size: 40,
+          Expanded(
+            child: ListView(
+              children: ListTile.divideTiles(
+                context: context,
+                tiles: List.generate(incomes.length, (index) {
+                  final income = incomes[index];
+                  return SafeArea(
+                    child: ListTile(
+                      tileColor: Colors.white,
+                      leading: IconButton(
+                        icon: Icon(Icons.delete_outline_outlined,
+                            color: Colors.grey),
+                        onPressed: () {
+                          // Logica per eliminare la spesa
+                          showConfirmationDialog(context, income, true);
+                        },
+                      ),
+                      title: Text(
+                        income.category,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87),
+                      ),
+                      trailing: Text(
+                        '€ +${income.amount.toStringAsFixed(2)}',
+                        style: TextStyle(fontSize: 18, color: entrateCol),
+                      ),
+                      subtitle: Text(
+                        income.description,
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black),
+                      ),
+                      onTap: () => showIncomeDialog(existingIncome: income),
+                    ),
+                  );
+                }),
+              ).toList(),
             ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  // Logica per aggiungere una nuova entrata
+                  showIncomeDialog();
+                },
+                child: Row(
+                  // Aggiunge icona e testo all'interno del pulsante
+                  mainAxisSize: MainAxisSize
+                      .min, // Riduce la dimensione al minimo necessario
+                  children: [
+                    Icon(
+                      Icons.add,
+                      color: entrateCol,
+                      size: 40,
+                    ),
+                    SizedBox(width: 10), // Spazio tra icona e testo
+                    Text("Entrata"), // Testo del pulsante
+                  ],
+                ),
+              ),
+              SizedBox(width: 20), // Spazio tra i due pulsanti
+              ElevatedButton(
+                onPressed: () {
+                  // Logica per aggiungere una nuova uscita
+                  showExpenseDialog();
+                },
+                child: Row(
+                  // Aggiunge icona e testo all'interno del pulsante
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons
+                          .remove, // Icona diversa per differenziare i pulsanti
+                      color:
+                          speseCol, // Assumendo che hai un colore diverso per le uscite
+                      size: 40,
+                    ),
+                    SizedBox(width: 10),
+                    Text("Spesa"), // Testo del pulsante
+                  ],
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 20),
         ],
@@ -241,6 +345,108 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     );
   }
 
+  void showIncomeDialog({Income? existingIncome}) async {
+    //String? selectedCategory;
+    //TextEditingController amountController = TextEditingController();
+
+    String? selectedCategory = existingIncome?.category;
+    //String? selectedDescription = existingExpense?.description;
+
+    // Controller per le note
+    TextEditingController noteController =
+        TextEditingController(text: existingIncome?.description.toString());
+    TextEditingController amountController =
+        TextEditingController(text: existingIncome?.amount.toString());
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Aggiungi Entrata'),
+          content: StatefulBuilder(
+            // Usa StatefulBuilder qui
+            builder: (BuildContext context, StateSetter setState) {
+              return SingleChildScrollView(
+                  child: ListBody(
+                children: <Widget>[
+                  DropdownButton<String>(
+                    value: selectedCategory,
+                    hint: Text('Seleziona Categoria'),
+                    items: constTipoSpese
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      selectedCategory = newValue;
+                      setState(() {});
+                    },
+                  ),
+                  if (selectedCategory !=
+                      null) // Mostra la categoria selezionata
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text("Categoria: $selectedCategory"),
+                    ),
+                  TextField(
+                    controller: amountController,
+                    onChanged: (value) {
+                      amountController.text = value.replaceAll(',', '.');
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Importo',
+                    ),
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: speseCol),
+                  ),
+                  TextField(
+                    controller: noteController,
+                    decoration: const InputDecoration(
+                      labelText: 'Note',
+                    ),
+                    maxLength: 24, // Massimo 8 parole
+                    maxLines: 2, // Massimo 2 righe
+                  ),
+                ],
+              ));
+            },
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blueAccent,
+              ),
+              onPressed: () {
+                double? amount = double.tryParse(amountController.text);
+                String notes = noteController.text;
+                if (selectedCategory != null && amount != null) {
+                  if (existingIncome != null) {
+                    // Aggiorna l'esistente
+                    updateIncome(
+                        existingIncome, amount, selectedCategory!, notes);
+                  } else {
+                    // Crea una nuova
+                    saveIncome(amount, selectedCategory!, notes);
+                  }
+                  Navigator.of(context).pop(); // Chiudi il dialogo
+                }
+              },
+              child: const Text('Conferma',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void deleteExpense(Expense expense) async {
     // Elimina l'elemento dal database
     expenseBox.delete(expense.key);
@@ -272,7 +478,8 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     loadExpenses();
   }
 
-  void showConfirmationDialog(BuildContext context, dynamic item) {
+  void showConfirmationDialog(
+      BuildContext context, dynamic item, bool isIncome) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -317,7 +524,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                         child: Text('CONFERMA',
                             style: TextStyle(color: Colors.white)),
                         onPressed: () {
-                          deleteExpense(item);
+                          isIncome ? deleteIncome(item) : deleteExpense(item);
                           Navigator.of(context).pop(); // Chiude il dialogo
                         },
                       ),
@@ -329,10 +536,41 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
       },
     );
   }
-} // end class
 
-bool isSameDay(DateTime date1, DateTime date2) {
-  return date1.year == date2.year &&
-      date1.month == date2.month &&
-      date1.day == date2.day;
-}
+  void deleteIncome(Income income) async {
+    // Elimina l'elemento dal database
+    incomeBox.delete(income.key);
+
+    // Aggiorna la lista delle spese per riflettere la modifica
+    loadIncomes();
+
+    // Eventualmente, mostra un messaggio di conferma
+  }
+
+  void saveIncome(double amount, String category, String description) {
+    final newIncome = Income()
+      ..amount = amount
+      ..description = description
+      ..category = category
+      ..date = widget.selectedDay;
+
+    incomeBox.add(newIncome);
+    loadIncomes();
+  }
+
+  void updateIncome(
+      Income income, double amount, String category, String description) {
+    income
+      ..amount = amount
+      ..category = category
+      ..description = description;
+    income.save(); // Assicurati che il modello Expense estenda HiveObject
+    loadIncomes();
+  }
+
+  bool isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+} // end class

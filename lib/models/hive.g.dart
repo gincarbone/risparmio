@@ -48,9 +48,51 @@ class ExpenseAdapter extends TypeAdapter<Expense> {
           typeId == other.typeId;
 }
 
-class FixedIncomeAdapter extends TypeAdapter<FixedIncome> {
+class IncomeAdapter extends TypeAdapter<Income> {
   @override
   final int typeId = 1;
+
+  @override
+  Income read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return Income()
+      ..amount = fields[0] as double
+      ..category = fields[1] as String
+      ..description = fields[2] as String
+      ..date = fields[3] as DateTime;
+  }
+
+  @override
+  void write(BinaryWriter writer, Income obj) {
+    writer
+      ..writeByte(4)
+      ..writeByte(0)
+      ..write(obj.amount)
+      ..writeByte(1)
+      ..write(obj.category)
+      ..writeByte(2)
+      ..write(obj.description)
+      ..writeByte(3)
+      ..write(obj.date);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is IncomeAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class FixedIncomeAdapter extends TypeAdapter<FixedIncome> {
+  @override
+  final int typeId = 2;
 
   @override
   FixedIncome read(BinaryReader reader) {
@@ -86,7 +128,7 @@ class FixedIncomeAdapter extends TypeAdapter<FixedIncome> {
 
 class FixedExpenseAdapter extends TypeAdapter<FixedExpense> {
   @override
-  final int typeId = 2;
+  final int typeId = 3;
 
   @override
   FixedExpense read(BinaryReader reader) {

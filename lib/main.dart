@@ -13,6 +13,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:risparmio/mainDrawer.dart';
 
 import 'package:risparmio/widget/gauge.dart';
+import 'dart:developer';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,7 +58,8 @@ class _CalendarScreenState extends State<CalendarScreen>
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
 
-  List<DateTime> datesWithIcon = [];
+  List<DateTime> datesWithExpenseIcon = [];
+  List<DateTime> datesWithIncomeIcon = [];
 
   List<FixedIncome> fixedIncomes = [];
   List<FixedExpense> fixedExpenses = [];
@@ -71,6 +73,7 @@ class _CalendarScreenState extends State<CalendarScreen>
   void initState() {
     super.initState();
     loadDatesWithExpenses();
+    loadDatesWithIncomes();
     calculateFinancialStats();
     setState(() {});
 
@@ -93,7 +96,12 @@ class _CalendarScreenState extends State<CalendarScreen>
   }
 
   void loadDatesWithExpenses() async {
-    datesWithIcon = await HiveManager().getDatesWithExpenses();
+    datesWithExpenseIcon = await HiveManager().getDatesWithExpenses();
+    setState(() {}); // Aggiorna lo stato per riflettere i nuovi dati
+  }
+
+  void loadDatesWithIncomes() async {
+    datesWithIncomeIcon = await HiveManager().getDatesWithIncomes();
     setState(() {}); // Aggiorna lo stato per riflettere i nuovi dati
   }
 
@@ -115,6 +123,8 @@ class _CalendarScreenState extends State<CalendarScreen>
   }
 
   late Box<Expense> expenseBox;
+  late Box<Income> incomeBox;
+
   // Per calcolare le spese totali
   double totalExpensesOfMonth =
       HiveManager().calculateTotalExpensesOfMonth(DateTime.now());
@@ -205,36 +215,48 @@ class _CalendarScreenState extends State<CalendarScreen>
                               fontWeight: FontWeight.bold,
                               color: Colors.black);
                         }
-
-                        if (datesWithIcon.any((date) => isSameDay(date, day))) {
-                          // RestColor.fromARGB(137, 1, 0, 0)get che combina il numero del giorno e l'icona
-                          return Stack(
-                            children: [
-                              Center(
-                                  child: Text('${day.day}', style: dayStyle)),
-                              // ignore: prefer_const_constructors
-                              Positioned(
-                                right: 0,
-                                top: 12,
-                                // ignore: prefer_const_constructors
-                                child: Container(
-                                  //color: Colors.blueAccent,
-                                  height: 8,
-                                  width: 8,
-                                  decoration: BoxDecoration(
-                                      color: Colors
-                                          .redAccent, // Sfondo rosso intenso
-                                      borderRadius:
-                                          BorderRadius.circular(10.0)),
-                                ),
-                              ),
-                            ],
-                          );
-                        } else {
-                          // Per gli altri giorni, mostra solo il numero del giorno
-                          return Center(
-                              child: Text('${day.day}', style: dayStyle));
-                        }
+                        // RestColor.fromARGB(137, 1, 0, 0)get che combina il numero del giorno e l'icona
+                        return Stack(
+                          children: [
+                            Center(child: Text('${day.day}', style: dayStyle)),
+                            datesWithExpenseIcon
+                                    .any((date) => isSameDay(date, day))
+                                ? Positioned(
+                                    right: 0,
+                                    top: 12,
+                                    // ignore: prefer_const_constructors
+                                    child: Container(
+                                      //color: Colors.blueAccent,
+                                      height: 8,
+                                      width: 8,
+                                      decoration: BoxDecoration(
+                                          color: Colors
+                                              .redAccent, // Sfondo rosso intenso
+                                          borderRadius:
+                                              BorderRadius.circular(10.0)),
+                                    ),
+                                  )
+                                : SizedBox(),
+                            datesWithIncomeIcon
+                                    .any((date) => isSameDay(date, day))
+                                ? Positioned(
+                                    right: 5,
+                                    top: 12,
+                                    // ignore: prefer_const_constructors
+                                    child: Container(
+                                      //color: Colors.blueAccent,
+                                      height: 8,
+                                      width: 8,
+                                      decoration: BoxDecoration(
+                                          color: Colors
+                                              .blueAccent, // Sfondo rosso intenso
+                                          borderRadius:
+                                              BorderRadius.circular(10.0)),
+                                    ),
+                                  )
+                                : SizedBox(),
+                          ],
+                        );
                       },
                     ),
                   ))),
@@ -552,6 +574,7 @@ class HiveManager {
   // ogni box corrisponde ad una tabella DB più o meno
 
   Box<Expense>? expenseBox;
+  Box<Income>? incomeBox;
   Box<FixedIncome>? fixedIncomeBox;
   Box<FixedExpense>? fixedExpenseBox;
 
@@ -559,9 +582,11 @@ class HiveManager {
     final appDocumentDir = await getApplicationDocumentsDirectory();
     Hive.init(appDocumentDir.path);
     Hive.registerAdapter(ExpenseAdapter());
+    Hive.registerAdapter(IncomeAdapter());
     Hive.registerAdapter(FixedIncomeAdapter());
     Hive.registerAdapter(FixedExpenseAdapter());
 
+    incomeBox = await Hive.openBox<Income>('incomes');
     expenseBox = await Hive.openBox<Expense>('expenses');
     fixedIncomeBox = await Hive.openBox<FixedIncome>('fixedIncomes');
     fixedExpenseBox = await Hive.openBox<FixedExpense>('fixedExpenses');
@@ -623,6 +648,25 @@ class HiveManager {
       }
     }
 
+    return dates.toList();
+  }
+
+  Future<List<DateTime>> getDatesWithIncomes() async {
+    var dates = <DateTime>{};
+    final now = DateTime.now();
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
+    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+
+    final incomes = incomeBox?.values ?? [];
+    for (var income in incomes) {
+      if (income.date
+              .isAfter(firstDayOfMonth.subtract(const Duration(days: 1))) &&
+          income.date.isBefore(lastDayOfMonth.add(const Duration(days: 1)))) {
+        dates.add(
+            DateTime(income.date.year, income.date.month, income.date.day));
+      }
+    }
+    log(dates.toList().toString());
     return dates.toList();
   }
 

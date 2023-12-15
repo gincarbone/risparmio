@@ -3,6 +3,7 @@ import 'package:risparmio/main.dart';
 import 'package:risparmio/models/hive.dart'; // Sostituisci con il percorso corretto
 import 'package:risparmio/models/constants.dart';
 import 'dart:developer' as dev;
+import 'package:risparmio/stats.dart';
 
 class MainDrawer extends StatefulWidget {
   @override
@@ -110,6 +111,20 @@ class _MainDrawerState extends State<MainDrawer> {
                 Text('Budget Giornaliero: €${dailyBudget.toStringAsFixed(2)}'),
               ],
             ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          ListTile(
+            leading: Icon(Icons.pie_chart, color: Colors.white),
+            title: Text('Statistiche', style: TextStyle(color: Colors.white)),
+            tileColor: Colors.purple, // Colore di sfondo viola
+            onTap: () {
+              // Naviga alla pagina delle statistiche
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => Stats(),
+              ));
+            },
           ),
         ],
       ),

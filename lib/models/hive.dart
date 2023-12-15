@@ -18,6 +18,21 @@ class Expense extends HiveObject {
 }
 
 @HiveType(typeId: 1)
+class Income extends HiveObject {
+  @HiveField(0)
+  late double amount;
+
+  @HiveField(1)
+  late String category;
+
+  @HiveField(2)
+  late String description;
+
+  @HiveField(3)
+  late DateTime date; // Data della spesa
+}
+
+@HiveType(typeId: 2)
 class FixedIncome extends HiveObject {
   @HiveField(0)
   late String category;
@@ -26,7 +41,7 @@ class FixedIncome extends HiveObject {
   late double amount;
 }
 
-@HiveType(typeId: 2)
+@HiveType(typeId: 3)
 class FixedExpense extends HiveObject {
   @HiveField(0)
   late String category;
