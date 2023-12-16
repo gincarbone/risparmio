@@ -13,7 +13,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:risparmio/mainDrawer.dart';
 
 import 'package:risparmio/widget/gauge.dart';
-import 'dart:developer';
+//import 'dart:developer';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,19 +55,28 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen>
     with TickerProviderStateMixin {
   final CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _selectedDay = DateTime.now();
-  DateTime _focusedDay = DateTime.now();
+
+  DateTime _meseSelezionato = DateTime.now();
+  final DateTime _selectedDay = DateTime.now();
+  //DateTime _focusedDay = DateTime.now();
 
   List<DateTime> datesWithExpenseIcon = [];
   List<DateTime> datesWithIncomeIcon = [];
 
   List<FixedIncome> fixedIncomes = [];
   List<FixedExpense> fixedExpenses = [];
+
   double totalFixedIncomes = 0.0;
   double totalFixedExpenses = 0.0;
   double dailyBudget = 0.0;
 
   late AnimationController controller;
+
+  // Per calcolare le spese totali
+  double totalExpensesOfMonth = 0.0;
+
+  // Per Calcolare il FOrecast di spesa
+  double forecastExpensesOfMonth = 0.0;
 
   @override
   void initState() {
@@ -95,17 +104,36 @@ class _CalendarScreenState extends State<CalendarScreen>
     super.dispose();
   }
 
+  void _onMonthChanged(DateTime focusedDay) {
+    setState(() {
+      _meseSelezionato = DateTime(focusedDay.year, focusedDay.month);
+      loadDatesWithExpenses();
+      loadDatesWithIncomes();
+      calculateFinancialStats();
+    });
+  }
+
   void loadDatesWithExpenses() async {
-    datesWithExpenseIcon = await HiveManager().getDatesWithExpenses();
+    datesWithExpenseIcon =
+        await HiveManager().getDatesWithExpenses(_meseSelezionato);
     setState(() {}); // Aggiorna lo stato per riflettere i nuovi dati
   }
 
   void loadDatesWithIncomes() async {
-    datesWithIncomeIcon = await HiveManager().getDatesWithIncomes();
+    datesWithIncomeIcon =
+        await HiveManager().getDatesWithIncomes(_meseSelezionato);
     setState(() {}); // Aggiorna lo stato per riflettere i nuovi dati
   }
 
   void calculateFinancialStats() async {
+    // Per calcolare le spese totali
+    totalExpensesOfMonth =
+        HiveManager().calculateTotalExpensesOfMonth(_meseSelezionato);
+
+    // Per Calcolare il FOrecast di spesa
+    forecastExpensesOfMonth =
+        HiveManager().calculateForecastOfMonth(_meseSelezionato);
+
     final fixedIncomes = await HiveManager().getFixedIncomes();
     final fixedExpenses = await HiveManager().getFixedExpenses();
 
@@ -124,14 +152,6 @@ class _CalendarScreenState extends State<CalendarScreen>
 
   late Box<Expense> expenseBox;
   late Box<Income> incomeBox;
-
-  // Per calcolare le spese totali
-  double totalExpensesOfMonth =
-      HiveManager().calculateTotalExpensesOfMonth(DateTime.now());
-
-  // Per Calcolare il FOrecast di spesa
-  double forecastExpensesOfMonth =
-      HiveManager().calculateForecastOfMonth(DateTime.now());
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +182,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                             color: Colors.redAccent,
                             fontWeight: FontWeight.bold)),
                     daysOfWeekHeight: 28,
-                    calendarStyle: CalendarStyle(
+                    calendarStyle: const CalendarStyle(
                       defaultTextStyle:
                           TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       weekendTextStyle: TextStyle(
@@ -176,7 +196,8 @@ class _CalendarScreenState extends State<CalendarScreen>
                       ),
                     ),
                     startingDayOfWeek: StartingDayOfWeek.monday,
-                    focusedDay: _focusedDay,
+                    //focusedDay: _focusedDay,
+
                     calendarFormat: _calendarFormat,
                     selectedDayPredicate: (day) {
                       return isSameDay(_selectedDay, day);
@@ -189,8 +210,9 @@ class _CalendarScreenState extends State<CalendarScreen>
                                 ExpenseDetailsScreen(selectedDay: selectedDay)),
                       );
                     },
+                    focusedDay: _meseSelezionato,
                     onPageChanged: (focusedDay) {
-                      _focusedDay = focusedDay;
+                      _onMonthChanged(focusedDay);
                     },
                     calendarBuilders: CalendarBuilders(
                       defaultBuilder: (context, day, focusedDay) {
@@ -236,7 +258,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                                               BorderRadius.circular(10.0)),
                                     ),
                                   )
-                                : SizedBox(),
+                                : const SizedBox(),
                             datesWithIncomeIcon
                                     .any((date) => isSameDay(date, day))
                                 ? Positioned(
@@ -254,7 +276,7 @@ class _CalendarScreenState extends State<CalendarScreen>
                                               BorderRadius.circular(10.0)),
                                     ),
                                   )
-                                : SizedBox(),
+                                : const SizedBox(),
                           ],
                         );
                       },
@@ -413,18 +435,6 @@ class _CalendarScreenState extends State<CalendarScreen>
             height: 10,
           )
         ])));
-  }
-
-  void calculateTotalExpensesOfMonth() {
-    final now = DateTime.now();
-    final startOfMonth = DateTime(now.year, now.month, 1);
-    final endOfMonth = DateTime(now.year, now.month + 1, 0);
-
-    totalExpensesOfMonth = expenseBox.values
-        .where((expense) =>
-            expense.date.isAfter(startOfMonth) &&
-            expense.date.isBefore(endOfMonth))
-        .fold(0.0, (sum, item) => sum + item.amount);
   }
 
   void calculateForecastOfMonth() {
@@ -632,13 +642,16 @@ class HiveManager {
     return forecast;
   }
 
-  Future<List<DateTime>> getDatesWithExpenses() async {
-    var dates = <DateTime>{};
-    final now = DateTime.now();
-    final firstDayOfMonth = DateTime(now.year, now.month, 1);
-    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+  Future<List<DateTime>> getDatesWithExpenses(meseSelezionato) async {
+    final firstDayOfMonth =
+        DateTime(meseSelezionato.year, meseSelezionato.month, 1);
+    final lastDayOfMonth =
+        DateTime(meseSelezionato.year, meseSelezionato.month + 1, 0);
 
     final expenses = expenseBox?.values ?? [];
+
+    var dates = <DateTime>{}; // nuovo
+
     for (var expense in expenses) {
       if (expense.date
               .isAfter(firstDayOfMonth.subtract(const Duration(days: 1))) &&
@@ -651,13 +664,16 @@ class HiveManager {
     return dates.toList();
   }
 
-  Future<List<DateTime>> getDatesWithIncomes() async {
-    var dates = <DateTime>{};
-    final now = DateTime.now();
-    final firstDayOfMonth = DateTime(now.year, now.month, 1);
-    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+  Future<List<DateTime>> getDatesWithIncomes(meseSelezionato) async {
+    final firstDayOfMonth =
+        DateTime(meseSelezionato.year, meseSelezionato.month, 1);
+    final lastDayOfMonth =
+        DateTime(meseSelezionato.year, meseSelezionato.month + 1, 0);
 
     final incomes = incomeBox?.values ?? [];
+
+    var dates = <DateTime>{}; // nuovo
+
     for (var income in incomes) {
       if (income.date
               .isAfter(firstDayOfMonth.subtract(const Duration(days: 1))) &&
@@ -666,7 +682,6 @@ class HiveManager {
             DateTime(income.date.year, income.date.month, income.date.day));
       }
     }
-    log(dates.toList().toString());
     return dates.toList();
   }
 
