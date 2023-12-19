@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:hive/hive.dart';
@@ -54,8 +56,8 @@ class _StatsState extends State<Stats> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(Icons.circle, color: section.color, size: 12),
-            SizedBox(width: 8),
-            Text(section.title, style: TextStyle(fontSize: 14)),
+            const SizedBox(width: 8),
+            Text(section.title, style: const TextStyle(fontSize: 14)),
           ],
         );
       }).toList(),
@@ -74,7 +76,7 @@ class _StatsState extends State<Stats> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Statistiche Spese')),
+      appBar: AppBar(title: const Text('Statistiche Spese')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -94,7 +96,7 @@ class _StatsState extends State<Stats> {
             ),
             Text(
               'Spesa Totale: €$totalSpent',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],
         ),

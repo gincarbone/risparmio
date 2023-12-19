@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:risparmio/main.dart';
 import 'package:risparmio/models/hive.dart'; // Sostituisci con il percorso corretto
@@ -5,6 +7,7 @@ import 'package:risparmio/models/constants.dart';
 import 'dart:developer' as dev;
 import 'package:risparmio/stats.dart';
 
+// ignore: use_key_in_widget_constructors
 class MainDrawer extends StatefulWidget {
   @override
   _MainDrawerState createState() => _MainDrawerState();
@@ -27,8 +30,8 @@ class _MainDrawerState extends State<MainDrawer> {
   }
 
   void calculateFinancialStats() async {
-    final fixedIncomes = await HiveManager().getFixedIncomes();
-    final fixedExpenses = await HiveManager().getFixedExpenses();
+    final fixedIncomes = HiveManager().getFixedIncomes();
+    final fixedExpenses = HiveManager().getFixedExpenses();
 
     totalFixedIncomes =
         fixedIncomes.fold(0.0, (sum, item) => sum + item.amount);
@@ -57,77 +60,103 @@ class _MainDrawerState extends State<MainDrawer> {
   Widget build(BuildContext context) {
     return Drawer(
       //shadowColor: Colors.grey,
-      child: ListView(
-        children: <Widget>[
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.fromARGB(255, 0, 39, 106), // Blu intenso
-                  Color.fromARGB(255, 96, 62, 189), // Fucsia
-                  // Arancione fluo
-                ],
+      child: Column(children: [
+        Expanded(
+          child: ListView(
+            children: <Widget>[
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color.fromARGB(255, 0, 39, 106), // Blu intenso
+                      Color.fromARGB(255, 96, 62, 189), // Fucsia
+                      // Arancione fluo
+                    ],
+                  ),
+                ),
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons
+                            .savings_outlined, // Sostituisci con l'icona che preferisci
+                        size: 50.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Risparmio $appVersion',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            child: Column(
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons
-                        .savings_outlined, // Sostituisci con l'icona che preferisci
-                    size: 50.0,
-                    color: Colors.white,
-                  ),
+              const SizedBox(
+                height: 10,
+              ),
+              // DrawerHeader e altre voci...
+              buildExpansionTile('Entrate Fisse', fixedIncomes, false),
+              buildExpansionTile('Uscite Fisse', fixedExpenses, true),
+              const SizedBox(
+                height: 20,
+              ),
+              // DrawerHeader e altre voci...
+              ListTile(
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                        'Disponibilità: €${totalFixedIncomes - totalFixedExpenses}'),
+                    Text(
+                        'Budget Giornaliero: €${dailyBudget.toStringAsFixed(2)}'),
+                  ],
                 ),
-                Text(
-                  'Risparmio 1.0',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 9,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              ListTile(
+                leading: const Icon(Icons.pie_chart, color: Colors.white),
+                title: const Text('Statistiche',
+                    style: TextStyle(color: Colors.white)),
+                tileColor: Colors.purple, // Colore di sfondo viola
+                onTap: () {
+                  // Naviga alla pagina delle statistiche
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => Stats(),
+                  ));
+                },
+              ),
+              // Footer del drawer con icona e testo
+            ],
           ),
-          const SizedBox(
-            height: 10,
+        ),
+        // Footer del drawer con icona e testo
+        Container(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/cube.png', // Sostituisci con il percorso corretto dell'immagine
+                width: 24, // Sostituisci con la larghezza desiderata
+                height: 24, // Sostituisci con l'altezza desiderata
+                //color: Colors.grey, // Se vuoi applicare un filtro colore
+              ),
+              const SizedBox(width: 10),
+              const Text('You&Media (2023)',
+                  style: TextStyle(color: Colors.grey, fontSize: 11)),
+            ],
           ),
-          // DrawerHeader e altre voci...
-          buildExpansionTile('Entrate Fisse', fixedIncomes, false),
-          buildExpansionTile('Uscite Fisse', fixedExpenses, true),
-          const SizedBox(
-            height: 20,
-          ),
-          // DrawerHeader e altre voci...
-          ListTile(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                    'Disponibilità: €${totalFixedIncomes - totalFixedExpenses}'),
-                Text('Budget Giornaliero: €${dailyBudget.toStringAsFixed(2)}'),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          ListTile(
-            leading: Icon(Icons.pie_chart, color: Colors.white),
-            title: Text('Statistiche', style: TextStyle(color: Colors.white)),
-            tileColor: Colors.purple, // Colore di sfondo viola
-            onTap: () {
-              // Naviga alla pagina delle statistiche
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => Stats(),
-              ));
-            },
-          ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
 
@@ -146,32 +175,30 @@ class _MainDrawerState extends State<MainDrawer> {
             showAddFixedEntryDialog(context, isExpense: isExpense);
           },
         ),
-        ...items
-            .map((item) => ListTile(
-                  title: Text(
-                    '${item.category}: € ${item.amount.toStringAsFixed(2)}',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                  textColor: Colors.white,
-                  leading: IconButton(
-                    icon: const Icon(
-                      Icons.delete_outline_outlined,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      // Logica per eliminare l'elemento
-                      showConfirmationDialog(context, item, isExpense);
-                      //deleteItem(item, isExpense);
-                    },
-                  ),
-                  tileColor: isExpense ? Colors.redAccent : Colors.blueAccent,
-                  onTap: () {
-                    // Apri il dialog di modifica per l'elemento esistente
-                    showAddFixedEntryDialog(context,
-                        isExpense: isExpense, existingItem: item);
-                  },
-                ))
-            .toList(),
+        ...items.map((item) => ListTile(
+              title: Text(
+                '${item.category}: € ${item.amount.toStringAsFixed(2)}',
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+              textColor: Colors.white,
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.delete_outline_outlined,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  // Logica per eliminare l'elemento
+                  showConfirmationDialog(context, item, isExpense);
+                  //deleteItem(item, isExpense);
+                },
+              ),
+              tileColor: isExpense ? Colors.redAccent : Colors.blueAccent,
+              onTap: () {
+                // Apri il dialog di modifica per l'elemento esistente
+                showAddFixedEntryDialog(context,
+                    isExpense: isExpense, existingItem: item);
+              },
+            )),
       ],
     );
   }

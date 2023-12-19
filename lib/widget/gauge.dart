@@ -3,25 +3,34 @@ import 'package:vector_math/vector_math.dart' as vmath;
 import 'dart:math' as math;
 
 class CustomCircularProgress extends CustomPainter {
+  double residuo = 0.0;
   final double value;
-  final String residuo;
-  final String entrateFisse; // Aggiungi un campo per il testo
-  final String usciteFisse;
-  final String usciteMese;
+  final double entrateFisse; // Aggiungi un campo per il testo
+  final double entrateMese;
+  final double usciteFisse;
+  final double usciteMese;
 
-  CustomCircularProgress(
-      {required this.value,
-      required this.residuo,
-      required this.entrateFisse,
-      required this.usciteFisse,
-      required this.usciteMese});
+  CustomCircularProgress({
+    required this.value,
+    required this.entrateMese,
+    required this.entrateFisse,
+    required this.usciteFisse,
+    required this.usciteMese,
+  }) {
+    residuo = _calculateValue();
+  }
+
+  double _calculateValue() {
+    var ret = entrateFisse - usciteFisse + entrateMese - usciteMese;
+    return ret > 0 ? ret : 0.0;
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2 + 50, size.height / 2);
 
     // Aggiungi titolo
-    final textTitolo = const TextSpan(
+    const textTitolo = TextSpan(
       text: "Risparmio",
       style: TextStyle(
         color: Colors.black54,
@@ -45,7 +54,7 @@ class CustomCircularProgress extends CustomPainter {
 
     // Aggiungi il testo al centro
     final textSpan = TextSpan(
-      text: residuo,
+      text: "€$residuo",
       style: const TextStyle(
         color: Colors.black,
         fontSize: 28,
@@ -83,12 +92,13 @@ class CustomCircularProgress extends CustomPainter {
     );
 
     const Gradient gradient = SweepGradient(
-      startAngle: 1.25 * math.pi / 2,
-      endAngle: 5.5 * math.pi / 2,
+      startAngle: 1.25 * math.pi / 1.15,
+      endAngle: 2 * math.pi,
       tileMode: TileMode.clamp,
       colors: <Color>[
         Colors.deepPurple,
         Colors.blueAccent,
+        Colors.deepPurple,
       ],
     );
     canvas.drawArc(
@@ -99,29 +109,18 @@ class CustomCircularProgress extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
-        ..shader = gradient
-            .createShader(Rect.fromLTWH(0.0, 0.0, size.width, size.height))
+        ..shader = gradient.createShader(
+            //Rect.fromLTWH(0.0, 0.0, size.width, size.height))
+            Rect.fromCircle(center: center, radius: 10))
         ..strokeWidth = 20,
     );
     canvas.restore();
 
     // Calcola la posizione per le icone e il testo sul lato destro
-    final double iconSize = 10.0;
-    final double textHeight = 16.0;
-    final double descTextHeight = 12.0;
-    final double spaceBetween = 10.0; // Spazio tra le righe
-
-    // Prima riga
-    _drawIconAndText(
-        canvas,
-        size,
-        iconSize,
-        textHeight,
-        descTextHeight,
-        " -$usciteFisse",
-        "Uscite Fisse",
-        Offset(size.width - 330, size.height - 80 - spaceBetween),
-        Colors.redAccent);
+    const double iconSize = 10.0;
+    const double textHeight = 16.0;
+    const double descTextHeight = 12.0;
+    const double spaceBetween = 10.0; // Spazio tra le righe
 
     // Seconda riga
     _drawIconAndText(
@@ -130,11 +129,34 @@ class CustomCircularProgress extends CustomPainter {
         iconSize,
         textHeight,
         descTextHeight,
-        entrateFisse,
+        "$entrateFisse",
         "Entrate fisse",
-        Offset(
-            size.width - 330, size.height / 2 + spaceBetween - 66 + textHeight),
+        Offset(size.width - 330, size.height - 128 - spaceBetween),
         Colors.blueAccent);
+
+    // Seconda riga
+    _drawIconAndText(
+        canvas,
+        size,
+        iconSize,
+        textHeight,
+        descTextHeight,
+        "$entrateMese",
+        "Altre entrate",
+        Offset(size.width - 330, size.height - 89 - spaceBetween),
+        Colors.blueAccent);
+
+    // Terza riga
+    _drawIconAndText(
+        canvas,
+        size,
+        iconSize,
+        textHeight,
+        descTextHeight,
+        "-$usciteFisse",
+        "Uscite Fisse",
+        Offset(size.width - 330, size.height - 50 - spaceBetween),
+        Colors.redAccent);
 
     // Prima riga
     _drawIconAndText(
@@ -143,9 +165,9 @@ class CustomCircularProgress extends CustomPainter {
         iconSize,
         textHeight,
         descTextHeight,
-        " -$usciteMese",
+        "-$usciteMese",
         "Uscite del Mese",
-        Offset(size.width - 330, size.height - 40 - spaceBetween),
+        Offset(size.width - 330, size.height - 10 - spaceBetween),
         Colors.redAccent);
   }
 
@@ -197,6 +219,11 @@ class CustomCircularProgress extends CustomPainter {
     textPainter.paint(canvas, offset);
   }
 
+  //@override
+  //bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomCircularProgress oldDelegate) {
+    return value != oldDelegate.value;
+  }
 }

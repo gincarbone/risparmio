@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors_in_immutables, library_private_types_in_public_api, use_super_parameters
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:risparmio/main.dart';
@@ -88,17 +90,17 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        title: Text('$formattedDate'),
+        title: Text(formattedDate),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             // Qui inserisci il tuo comportamento personalizzato
-            print('Azione personalizzata per il pulsante Indietro');
+            //print('Azione personalizzata per il pulsante Indietro');
             loadExpenses();
             loadIncomes();
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => CalendarScreen()),
+              MaterialPageRoute(builder: (context) => const CalendarScreen()),
             );
           },
         ),
@@ -116,7 +118,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                     child: ListTile(
                       tileColor: Colors.white,
                       leading: IconButton(
-                        icon: Icon(Icons.delete_outline_outlined,
+                        icon: const Icon(Icons.delete_outline_outlined,
                             color: Colors.grey),
                         onPressed: () {
                           // Logica per eliminare la spesa
@@ -125,7 +127,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                       ),
                       title: Text(
                         expense.category,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87),
@@ -136,7 +138,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                       ),
                       subtitle: Text(
                         expense.description,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.normal,
                             color: Colors.black),
@@ -158,7 +160,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                     child: ListTile(
                       tileColor: Colors.white,
                       leading: IconButton(
-                        icon: Icon(Icons.delete_outline_outlined,
+                        icon: const Icon(Icons.delete_outline_outlined,
                             color: Colors.grey),
                         onPressed: () {
                           // Logica per eliminare la spesa
@@ -167,7 +169,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                       ),
                       title: Text(
                         income.category,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87),
@@ -178,7 +180,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                       ),
                       subtitle: Text(
                         income.description,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.normal,
                             color: Colors.black),
@@ -204,16 +206,16 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                       .min, // Riduce la dimensione al minimo necessario
                   children: [
                     Icon(
-                      Icons.add,
+                      Icons.arrow_circle_up_outlined,
                       color: entrateCol,
                       size: 40,
                     ),
-                    SizedBox(width: 10), // Spazio tra icona e testo
-                    Text("Entrata"), // Testo del pulsante
+                    const SizedBox(width: 10), // Spazio tra icona e testo
+                    const Text("Entrata"), // Testo del pulsante
                   ],
                 ),
               ),
-              SizedBox(width: 20), // Spazio tra i due pulsanti
+              const SizedBox(width: 20), // Spazio tra i due pulsanti
               ElevatedButton(
                 onPressed: () {
                   // Logica per aggiungere una nuova uscita
@@ -225,19 +227,19 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                   children: [
                     Icon(
                       Icons
-                          .remove, // Icona diversa per differenziare i pulsanti
+                          .arrow_circle_down_outlined, // Icona diversa per differenziare i pulsanti
                       color:
                           speseCol, // Assumendo che hai un colore diverso per le uscite
                       size: 40,
                     ),
-                    SizedBox(width: 10),
-                    Text("Spesa"), // Testo del pulsante
+                    const SizedBox(width: 10),
+                    const Text("Spesa"), // Testo del pulsante
                   ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -269,7 +271,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                 children: <Widget>[
                   DropdownButton<String>(
                     value: selectedCategory,
-                    hint: Text('Seleziona Categoria'),
+                    hint: const Text('Seleziona Categoria'),
                     items: constTipoSpese
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
@@ -318,7 +320,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.blueAccent,
+                backgroundColor: Colors.blueAccent,
               ),
               onPressed: () {
                 double? amount = double.tryParse(amountController.text);
@@ -371,8 +373,8 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                 children: <Widget>[
                   DropdownButton<String>(
                     value: selectedCategory,
-                    hint: Text('Seleziona Categoria'),
-                    items: constTipoSpese
+                    hint: const Text('Seleziona Categoria'),
+                    items: constTipoEntrate
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
@@ -420,7 +422,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.blueAccent,
+                backgroundColor: Colors.blueAccent,
               ),
               onPressed: () {
                 double? amount = double.tryParse(amountController.text);
@@ -487,8 +489,9 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
-          title: Text('Conferma Cancellazione'),
-          content: Text('Sei sicuro di voler cancellare questo elemento?'),
+          title: const Text('Conferma Cancellazione'),
+          content:
+              const Text('Sei sicuro di voler cancellare questo elemento?'),
           actionsPadding:
               EdgeInsets.zero, // Rimuove il padding intorno alle azioni
           actions: <Widget>[
@@ -498,14 +501,14 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                 children: [
                   Expanded(
                       child: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(20),
                       ),
                     ),
                     child: TextButton(
-                      child: Text('ANNULLA',
+                      child: const Text('ANNULLA',
                           style: TextStyle(color: Colors.white)),
                       onPressed: () {
                         Navigator.of(context).pop(); // Chiude il dialogo
@@ -514,14 +517,14 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                   )),
                   Expanded(
                     child: Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.blue,
                         borderRadius: BorderRadius.only(
                           bottomRight: Radius.circular(20),
                         ),
                       ),
                       child: TextButton(
-                        child: Text('CONFERMA',
+                        child: const Text('CONFERMA',
                             style: TextStyle(color: Colors.white)),
                         onPressed: () {
                           isIncome ? deleteIncome(item) : deleteExpense(item);

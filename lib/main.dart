@@ -8,11 +8,12 @@ import 'package:risparmio/daymanagement.dart';
 //import 'package:risparmio/models/hive_spese.g.dart';
 import 'package:risparmio/models/hive.dart';
 import 'package:risparmio/models/constants.dart';
-
+import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:risparmio/mainDrawer.dart';
 
 import 'package:risparmio/widget/gauge.dart';
+
 //import 'dart:developer';
 
 void main() async {
@@ -72,8 +73,9 @@ class _CalendarScreenState extends State<CalendarScreen>
 
   late AnimationController controller;
 
-  // Per calcolare le spese totali
+  // Per calcolare le entrate e le spese totali del mese
   double totalExpensesOfMonth = 0.0;
+  double totalIncomesOfMonth = 0.0;
 
   // Per Calcolare il FOrecast di spesa
   double forecastExpensesOfMonth = 0.0;
@@ -81,10 +83,14 @@ class _CalendarScreenState extends State<CalendarScreen>
   @override
   void initState() {
     super.initState();
-    loadDatesWithExpenses();
-    loadDatesWithIncomes();
-    calculateFinancialStats();
-    setState(() {});
+    Future.delayed(Duration.zero, () async {
+      await loadDatesWithExpenses();
+      await loadDatesWithIncomes();
+      await calculateFinancialStats();
+      if (mounted) {
+        setState(() {});
+      }
+    });
 
     controller = AnimationController(
       vsync: this,
@@ -94,8 +100,6 @@ class _CalendarScreenState extends State<CalendarScreen>
       });
     //controller.repeat(reverse: false);
     controller.forward();
-
-    super.initState();
   }
 
   @override
@@ -104,38 +108,56 @@ class _CalendarScreenState extends State<CalendarScreen>
     super.dispose();
   }
 
+  // NEW METHODS HERE
+
+  bool isSelectedMonthCurrent(DateTime meseSelezionato) {
+    DateTime now = DateTime.now();
+    return meseSelezionato.year == now.year &&
+        meseSelezionato.month == now.month;
+  }
+
+  String getMonthName(DateTime date) {
+    final DateFormat formatter = DateFormat.MMMM('it_IT');
+    return formatter
+        .format(date); // 'gennaio' per il mese di Gennaio, ad esempio
+  }
+
   void _onMonthChanged(DateTime focusedDay) {
-    setState(() {
-      _meseSelezionato = DateTime(focusedDay.year, focusedDay.month);
-      loadDatesWithExpenses();
-      loadDatesWithIncomes();
-      calculateFinancialStats();
+    _meseSelezionato = DateTime(focusedDay.year, focusedDay.month);
+    Future.delayed(Duration.zero, () async {
+      await loadDatesWithExpenses();
+      await loadDatesWithIncomes();
+      await calculateFinancialStats();
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
-  void loadDatesWithExpenses() async {
+  Future<void> loadDatesWithExpenses() async {
     datesWithExpenseIcon =
         await HiveManager().getDatesWithExpenses(_meseSelezionato);
-    setState(() {}); // Aggiorna lo stato per riflettere i nuovi dati
   }
 
-  void loadDatesWithIncomes() async {
+  Future<void> loadDatesWithIncomes() async {
     datesWithIncomeIcon =
         await HiveManager().getDatesWithIncomes(_meseSelezionato);
-    setState(() {}); // Aggiorna lo stato per riflettere i nuovi dati
   }
 
-  void calculateFinancialStats() async {
+  Future<void> calculateFinancialStats() async {
     // Per calcolare le spese totali
     totalExpensesOfMonth =
         HiveManager().calculateTotalExpensesOfMonth(_meseSelezionato);
+
+    totalIncomesOfMonth =
+        HiveManager().calculateTotalIncomesOfMonth(_meseSelezionato);
 
     // Per Calcolare il FOrecast di spesa
     forecastExpensesOfMonth =
         HiveManager().calculateForecastOfMonth(_meseSelezionato);
 
-    final fixedIncomes = await HiveManager().getFixedIncomes();
-    final fixedExpenses = await HiveManager().getFixedExpenses();
+    final fixedIncomes = HiveManager().getFixedIncomes();
+    final fixedExpenses = HiveManager().getFixedExpenses();
 
     totalFixedIncomes =
         fixedIncomes.fold(0.0, (sum, item) => sum + item.amount);
@@ -146,8 +168,6 @@ class _CalendarScreenState extends State<CalendarScreen>
     final daysInMonth =
         DateTime(DateTime.now().year, DateTime.now().month + 1, 0).day;
     dailyBudget = difference / daysInMonth;
-
-    setState(() {});
   }
 
   late Box<Expense> expenseBox;
@@ -158,7 +178,7 @@ class _CalendarScreenState extends State<CalendarScreen>
     return Scaffold(
         drawer: MainDrawer(),
         appBar: AppBar(
-          title: const Text('Risparmio Mensile'),
+          title: Text(getMonthName(_meseSelezionato).toString()),
         ),
         backgroundColor: bgColor,
         body: SingleChildScrollView(
@@ -316,11 +336,10 @@ class _CalendarScreenState extends State<CalendarScreen>
                                       totalExpensesOfMonth) /
                                   totalFixedIncomes
                               : 0,
-                          residuo:
-                              "€ ${(totalFixedIncomes - totalFixedExpenses - totalExpensesOfMonth).toStringAsFixed(2)}",
-                          entrateFisse: totalFixedIncomes.toStringAsFixed(2),
-                          usciteFisse: totalFixedExpenses.toStringAsFixed(2),
-                          usciteMese: totalExpensesOfMonth.toStringAsFixed(2)),
+                          entrateMese: totalIncomesOfMonth,
+                          entrateFisse: totalFixedIncomes,
+                          usciteFisse: totalFixedExpenses,
+                          usciteMese: totalExpensesOfMonth),
                     ),
                   ),
                 ),
@@ -328,113 +347,196 @@ class _CalendarScreenState extends State<CalendarScreen>
           const SizedBox(
             height: 5,
           ),
-          Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Container(
-                height: 300.0,
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(
-                        20.0), // Angolo arrotondato in alto a sinistra
-                    topRight: Radius.circular(
-                        20.0), // Angolo arrotondato in alto a destra
-                  ),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color.fromARGB(255, 0, 39, 106), // Blu intenso
-                      Color.fromARGB(255, 96, 62, 189), // Fucsia
-                      // Arancione fluo
-                    ],
-                  ),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+          isSelectedMonthCurrent(_meseSelezionato)
+              ? Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Container(
+                    height: 300.0,
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(
+                            20.0), // Angolo arrotondato in alto a sinistra
+                        topRight: Radius.circular(
+                            20.0), // Angolo arrotondato in alto a destra
+                      ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color.fromARGB(255, 0, 39, 106), // Blu intenso
+                          Color.fromARGB(255, 96, 62, 189), // Fucsia
+                          // Arancione fluo
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '   Previsioni Risparmio',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              SizedBox(width: 15), // Spazio tra icona e testo
+                              Expanded(
+                                child: Text(
+                                  'Le previsioni di risparmio e spese sono calcolate da un algoritmo sulla base delle tue abitudini di consumo rilevate durante il mese in corso.',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 8),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
                           Text(
-                            '   Previsioni Risparmio',
+                            '€ ${(totalFixedIncomes - totalFixedExpenses - forecastExpensesOfMonth).toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
+                              color: totalFixedIncomes -
+                                          totalFixedExpenses -
+                                          forecastExpensesOfMonth <
+                                      0
+                                  ? Colors.redAccent
+                                  : Colors.white,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: <Widget>[
+                              Expanded(
+                                child: buildColumnItem(
+                                    Icons.money,
+                                    "Previsione spesa a fine mese*",
+                                    '€ ${forecastExpensesOfMonth.toStringAsFixed(2)}'),
+                              ),
+                              Expanded(
+                                child: buildColumnItem(
+                                    Icons.graphic_eq,
+                                    "Quanto spendi in media al giorno?",
+                                    '€ ${(totalExpensesOfMonth / DateTime.now().day).toStringAsFixed(2)}'),
+                              ),
+                              Expanded(
+                                child: buildColumnItem(
+                                    Icons.lightbulb,
+                                    "Quanto puoi spendere al giorno?",
+                                    '€ ${dailyBudget.toStringAsFixed(2)}'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ))
+              : Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Container(
+                    height: 250.0,
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20.0),
+                        topRight: Radius.circular(20.0),
+                      ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color.fromARGB(255, 255, 255, 255), // Grigio
+                          Color.fromARGB(255, 255, 255, 255), // Viola
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            'Risparmio ${getMonthName(_meseSelezionato)}',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 20,
                               fontWeight: FontWeight.normal,
                             ),
                           ),
-                        ],
-                      ),
-                      const Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          SizedBox(width: 15), // Spazio tra icona e testo
-                          Expanded(
-                            child: Text(
-                              'Le previsioni di risparmio e spese sono calcolate da un algoritmo sulla base delle tue abitudini di consumo rilevate durante il mese in corso.',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 8),
+                          const SizedBox(height: 5),
+                          Text(
+                            '€${(totalFixedIncomes - totalFixedExpenses - totalExpensesOfMonth + totalIncomesOfMonth).toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Icon(
+                            (totalFixedIncomes -
+                                        totalFixedExpenses -
+                                        totalExpensesOfMonth +
+                                        totalIncomesOfMonth) >
+                                    0
+                                ? Icons.trending_up
+                                : Icons.trending_down,
+                            color: totalFixedIncomes -
+                                        totalFixedExpenses -
+                                        totalExpensesOfMonth +
+                                        totalIncomesOfMonth >
+                                    0
+                                ? entrateCol
+                                : speseCol,
+                            size: 80,
+                          ),
+                          Text(
+                            (totalFixedIncomes -
+                                        totalFixedExpenses -
+                                        totalExpensesOfMonth +
+                                        totalIncomesOfMonth) >
+                                    0
+                                ? 'Mese chiuso. Ottimo lavoro!'
+                                : 'Stai spendendo troppo. Stai più attento!',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        '€ ${(totalFixedIncomes - totalFixedExpenses - forecastExpensesOfMonth).toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: totalFixedIncomes -
-                                      totalFixedExpenses -
-                                      forecastExpensesOfMonth <
-                                  0
-                              ? Colors.redAccent
-                              : Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Expanded(
-                            child: buildColumnItem(
-                                Icons.money,
-                                "Previsione spesa a fine mese*",
-                                '€ ${forecastExpensesOfMonth.toStringAsFixed(2)}'),
-                          ),
-                          Expanded(
-                            child: buildColumnItem(
-                                Icons.graphic_eq,
-                                "Quanto spendi in media al giorno?",
-                                '€ ${(totalExpensesOfMonth / DateTime.now().day).toStringAsFixed(2)}'),
-                          ),
-                          Expanded(
-                            child: buildColumnItem(
-                                Icons.lightbulb,
-                                "Quanto puoi spendere al giorno?",
-                                '€ ${dailyBudget.toStringAsFixed(2)}'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              )),
           //SizedBox(height: 240),
 
           const SizedBox(
             height: 10,
           )
         ])));
+  }
+
+  double getGaugeValue() {
+    return totalFixedExpenses -
+        totalFixedExpenses -
+        totalExpensesOfMonth +
+        totalIncomesOfMonth;
   }
 
   void calculateForecastOfMonth() {
@@ -600,6 +702,23 @@ class HiveManager {
     expenseBox = await Hive.openBox<Expense>('expenses');
     fixedIncomeBox = await Hive.openBox<FixedIncome>('fixedIncomes');
     fixedExpenseBox = await Hive.openBox<FixedExpense>('fixedExpenses');
+  }
+
+  double calculateTotalIncomesOfMonth(DateTime month) {
+    double total = 0.0;
+    final startOfMonth = DateTime(month.year, month.month, 1);
+    final endOfMonth = DateTime(month.year, month.month + 1, 0);
+
+    if (incomeBox != null) {
+      final incomes = incomeBox!.values.where((income) =>
+          income.date.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
+          income.date.isBefore(endOfMonth.add(const Duration(days: 1))));
+
+      for (var income in incomes) {
+        total += income.amount;
+      }
+    }
+    return total;
   }
 
   double calculateTotalExpensesOfMonth(DateTime month) {
