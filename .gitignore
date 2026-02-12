@@ -22,12 +22,7 @@ android/local.properties
 # OS
 .DS_Store
 Thumbs.db
+nul
 
 # Claude
 .claude/
-
-# Misc
-*.swp
-*.pyc
-nul
-UsersgmincarboneDocumentsSvilupporisparmio/
